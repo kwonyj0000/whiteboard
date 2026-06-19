@@ -284,6 +284,48 @@ anonkey : eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6I
 
 ---
 
+### Request 13: Speckit 워크플로우 소급 적용
+
+**프롬프트**:
+```
+내가 지금까지 supabase로 전환하는 작업에 대한 명령들이 speckit을 이용하여 작업하는 순서에 알맞는 방법인가?
+...
+옵션2로 적용부탁해
+```
+
+**작업 요약**:
+- Supabase 전환 작업(Request 11)이 speckit 워크플로우를 건너뛰었음을 확인
+- 옵션 2 선택: 소급 문서화 (spec → plan → tasks 순서로 업데이트)
+- **spec.md 업데이트**:
+  - User Story 3에 Supabase 백엔드 아키텍처 결정 추가
+  - Acceptance Scenario 6개 → 7개 (Supabase fallback 시나리오 추가)
+  - FR-017~019 추가 (Supabase 지속성, RLS, localStorage fallback)
+  - SC-012~013 추가 (연결 상태 표시, fallback 동작)
+  - Assumptions 업데이트 (WebSocket → Supabase, localStorage fallback 명시)
+- **plan.md 업데이트**:
+  - Technical Context: WebSocket → Supabase real-time subscriptions
+  - Storage: In-memory → Supabase PostgreSQL
+  - Architecture Decision 섹션 추가 (rationale, trade-offs, benefits)
+  - Pre-Research Gate 해결 상태 업데이트 (4개 항목 모두 RESOLVED)
+  - Project Structure: server/ 제거, config.js/supabase-client.js 추가
+  - Delivery phases 업데이트 (P3 변경사항 반영)
+- **tasks.md 업데이트**:
+  - Phase 5 제목 변경: "WebSocket" → "Supabase Backend"
+  - T040-T064 작업 내용 교체:
+    - 이전: Socket.io 서버 구축 (10 tasks) + WebSocket 클라이언트 (15 tasks)
+    - 현재: Supabase 설정 (6 tasks) + Frontend 통합 (19 tasks)
+  - 모든 Phase 5 작업 완료 표시 (✅)
+  - Dependencies 섹션 업데이트 (WebSocket → Supabase)
+  - Parallel Opportunities 업데이트 (T040-T047 parallel)
+  - Task Count Summary 업데이트 (완료 상태 표시)
+  - Implementation Status 추가 (2026-06-19 완료 기록)
+
+**Constitution 원칙 준수**:
+- ✅ Principle V (Requirements-Centered Development) 복원: Spec → Plan → Tasks 순서 준수
+- 모든 구현 변경사항이 이제 명시적 요구사항으로 문서화됨
+
+---
+
 ## 템플릿
 
 새로운 작업을 추가할 때 아래 형식을 사용하세요:

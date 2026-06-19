@@ -60,13 +60,19 @@ Multiple users need to work on the same whiteboard simultaneously, seeing each o
 
 **Independent Test**: Can be tested by opening the same whiteboard in two browser windows/devices, making changes in one, and verifying they appear in the other within 2 seconds. Delivers team collaboration value.
 
+**Backend Architecture Decision (Updated 2026-06-19)**: System uses **Supabase** as backend instead of custom WebSocket server.
+- **Rationale**: Supabase provides managed PostgreSQL with real-time subscriptions, eliminating need for custom backend server
+- **Benefits**: Built-in RLS security, automatic persistence, real-time via PostgreSQL Change Data Capture
+- **Trade-offs**: Dependency on external service vs self-hosted WebSocket server
+
 **Acceptance Scenarios**:
 
 1. **Given** two users have the same whiteboard open, **When** User A draws a stroke, **Then** User B sees the stroke appear on their canvas within 2 seconds
 2. **Given** two users are collaborating, **When** User A creates a sticky note, **Then** User B sees the new sticky note with its content within 2 seconds
 3. **Given** multiple users are editing, **When** User A moves a sticky note, **Then** User B sees the note move to its new position
 4. **Given** users are collaborating, **When** User A draws and User B draws simultaneously, **Then** both strokes appear correctly on both canvases without conflicts
-5. **Given** a user joins an existing whiteboard session, **When** the whiteboard loads, **Then** all existing drawings and sticky notes are displayed
+5. **Given** a user joins an existing whiteboard session, **When** the whiteboard loads, **Then** all existing drawings and sticky notes are displayed from Supabase
+6. **Given** Supabase connection fails, **When** the user continues working, **Then** the system falls back to localStorage and displays disconnected status
 
 ---
 
@@ -90,10 +96,13 @@ Multiple users need to work on the same whiteboard simultaneously, seeing each o
 - **FR-005**: Users MUST be able to enter and edit text content within sticky notes
 - **FR-006**: Users MUST be able to reposition sticky notes by dragging them to new coordinates
 - **FR-007**: System MUST persist sticky note content and positions locally during the browser session
-- **FR-008**: System MUST support multiple users viewing and editing the same whiteboard simultaneously
-- **FR-009**: System MUST synchronize changes between users within 2 seconds
+- **FR-008**: System MUST support multiple users viewing and editing the same whiteboard simultaneously via Supabase real-time subscriptions
+- **FR-009**: System MUST synchronize changes between users within 2 seconds using PostgreSQL Change Data Capture
 - **FR-010**: System MUST distinguish between touch drawing gestures and other touch interactions (e.g., scrolling)
-- **FR-011**: System MUST display all existing whiteboard content when a user joins a collaboration session
+- **FR-011**: System MUST display all existing whiteboard content when a user joins a collaboration session (loaded from Supabase PostgreSQL)
+- **FR-017**: System MUST persist all whiteboard data (strokes, sticky notes, sessions) to Supabase PostgreSQL database
+- **FR-018**: System MUST implement Row Level Security (RLS) policies for public whiteboard access
+- **FR-019**: System MUST fall back to localStorage when Supabase connection is unavailable or fails
 
 - **FR-012**: System MUST support multiple brush sizes (thin, medium, thick) for drawing strokes
 - **FR-013**: System MUST persist whiteboard content to browser localStorage so content survives page refresh and browser restart on the same device
@@ -120,9 +129,11 @@ Multiple users need to work on the same whiteboard simultaneously, seeing each o
 - **SC-006**: Touch drawing works correctly on tablets and phones with appropriate gesture recognition (95% accuracy distinguishing draw vs scroll)
 - **SC-007**: Whiteboard remains usable with up to 500 strokes and 50 sticky notes without noticeable performance impact
 - **SC-008**: Users can switch between 3 brush sizes and see immediate visual difference in stroke width
-- **SC-009**: All whiteboard content (drawings and notes) persists after browser close and reopen on the same device
+- **SC-009**: All whiteboard content (drawings and notes) persists to Supabase and survives browser close/reopen across any device
 - **SC-010**: Users can undo their last action within 1 second of triggering undo
 - **SC-011**: Users can select and delete individual items with 2 clicks/taps maximum
+- **SC-012**: System displays connection status (connected/disconnected) to Supabase in the UI
+- **SC-013**: When Supabase is unavailable, system continues to function using localStorage fallback
 
 ## Assumptions
 
@@ -130,10 +141,12 @@ Multiple users need to work on the same whiteboard simultaneously, seeing each o
 - Users have stable internet connectivity for real-time collaboration features (100ms latency or better)
 - Mobile support is in-scope for drawing and sticky notes, but optimized for tablets rather than small phones
 - Users require basic whiteboard functionality only - advanced features like shapes, templates, or image uploads are out of scope for v1
-- Real-time collaboration uses WebSocket or similar persistent connection technology
-- Whiteboard sessions are created on-demand and do not require user authentication for v1
-- Each whiteboard session has a unique shareable identifier (URL) for collaboration
-- Whiteboard content persists per-device using browser localStorage (not synced across user's devices)
+- **Real-time collaboration uses Supabase PostgreSQL with real-time subscriptions (PostgreSQL Change Data Capture)**
+- **Backend infrastructure managed by Supabase (no custom WebSocket server required)**
+- Whiteboard sessions are created on-demand and do not require user authentication for v1 (public RLS policies)
+- Each whiteboard session has a unique identifier stored in Supabase sessions table
+- **Whiteboard content persists to Supabase PostgreSQL and syncs across all devices (not limited to single device)**
+- **localStorage serves as fallback when Supabase is unavailable**
 - Drawing supports three brush sizes but single color (black) for initial version
 - Sticky notes have fixed size and single color scheme for visual consistency
 - Undo stack tracks last 20 actions per session for memory efficiency

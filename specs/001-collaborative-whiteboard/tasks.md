@@ -125,44 +125,54 @@ whiteboard/
 
 ---
 
-## Phase 5: User Story 3 - Multi-User Collaboration (Priority: P3)
+## Phase 5: User Story 3 - Multi-User Collaboration (Priority: P3) - Supabase Backend
 
-**Goal**: Multiple users see each other's changes in real-time via WebSocket synchronization
+**Goal**: Multiple users see each other's changes in real-time via Supabase real-time subscriptions
 
-**Independent Test**: Open two browser windows with same session URL, draw/create notes in one, verify they appear in the other within 2s (see quickstart.md Scenario 11-15)
+**Architecture Change (2026-06-19)**: Replaced custom WebSocket server with Supabase managed backend
 
-### Backend Setup (P3)
+**Independent Test**: Open two browser windows with same session, draw/create notes in one, verify they appear in the other within 2s (see quickstart.md Scenario 11-15)
 
-- [ ] T040 [P] [US3] Create server/ directory with package.json (express, socket.io dependencies)
-- [ ] T041 [P] [US3] Create server/index.js with Express static file server and Socket.io initialization
-- [ ] T042 [P] [US3] Implement server/session.js with WhiteboardState class (in-memory Map storage)
-- [ ] T043 [US3] Implement Socket.io connection handler in server/index.js (join room on connect)
-- [ ] T044 [US3] Implement session state broadcast (session:state event) in server/index.js
-- [ ] T045 [US3] Implement stroke event handlers (stroke:add, stroke:delete) in server/index.js
-- [ ] T046 [US3] Implement sticky note event handlers (note:create, note:update, note:delete) in server/index.js
-- [ ] T047 [US3] Add rate limiting (10 events/sec per user) in server/index.js
-- [ ] T048 [US3] Implement user join/leave notifications (user:joined, user:left) in server/index.js
-- [ ] T049 [US3] Add error handling and capacity checks (1000 strokes, 100 notes max) in server/session.js
+### Supabase Setup (P3)
+
+- [x] T040 [P] [US3] Create supabase-schema.sql with sessions, strokes, sticky_notes tables
+- [x] T041 [P] [US3] Define RLS policies for public whiteboard access in supabase-schema.sql
+- [x] T042 [P] [US3] Add real-time publication for strokes and sticky_notes tables
+- [x] T043 [P] [US3] Create .env.example with SUPABASE_URL and SUPABASE_ANON_KEY placeholders
+- [x] T044 [P] [US3] Create SUPABASE_SETUP.md with database setup instructions
+- [x] T045 [P] [US3] Create README.md with project overview and deployment guide
 
 ### Frontend Integration (P3)
 
-- [ ] T050 [P] [US3] Implement js/collaboration.js with connectToSession(), emitStroke(), emitStickyNote(), disconnectFromSession()
-- [ ] T051 [US3] Add Socket.io client library to index.html (CDN or local copy)
-- [ ] T052 [US3] Add session ID generation/parsing from URL query params in js/main.js
-- [ ] T053 [US3] Integrate WebSocket connection on app init in js/main.js (connect to server)
-- [ ] T054 [US3] Implement session:state handler to initialize canvas with server data in js/collaboration.js
-- [ ] T055 [US3] Emit stroke:add events after drawing in js/main.js
-- [ ] T056 [US3] Handle incoming stroke:added events to render remote strokes in js/collaboration.js
-- [ ] T057 [US3] Emit note:create/update events after note actions in js/main.js
-- [ ] T058 [US3] Handle incoming note:created/updated events to render remote notes in js/collaboration.js
-- [ ] T059 [US3] Emit delete events (stroke:delete, note:delete) in js/main.js
-- [ ] T060 [US3] Handle incoming delete events to remove remote items in js/collaboration.js
-- [ ] T061 [US3] Add connection status indicator to UI in index.html (Connected/Disconnected badge)
-- [ ] T062 [US3] Implement auto-reconnection with exponential backoff in js/collaboration.js
-- [ ] T063 [US3] Add optimistic UI updates (update local immediately, sync async) in js/main.js
-- [ ] T064 [US3] Throttle stroke emission to 50ms intervals in js/main.js
+- [x] T046 [P] [US3] Create js/config.js with Supabase configuration (URL, anon key, fallback settings)
+- [x] T047 [P] [US3] Implement js/supabase-client.js with Supabase client initialization and API wrappers
+- [x] T048 [US3] Add Supabase CDN script to index.html
+- [x] T049 [US3] Add session ID generation/parsing from URL query params in js/main.js
+- [x] T050 [US3] Integrate Supabase connection on app init in js/main.js (initialize client, check config)
+- [x] T051 [US3] Implement session creation/retrieval in supabase-client.js (getOrCreateSession)
+- [x] T052 [US3] Load initial whiteboard state from Supabase on app init in js/main.js
+- [x] T053 [US3] Implement real-time subscription setup in supabase-client.js (subscribeToStrokes, subscribeToNotes)
+- [x] T054 [US3] Save strokes to Supabase after drawing in js/main.js (async saveStroke)
+- [x] T055 [US3] Handle incoming stroke INSERT events to render remote strokes in js/main.js
+- [x] T056 [US3] Handle incoming stroke DELETE events to remove remote strokes in js/main.js
+- [x] T057 [US3] Save sticky notes to Supabase on create/update in js/main.js (async saveNote)
+- [x] T058 [US3] Handle incoming note INSERT/UPDATE events to render remote notes in js/main.js
+- [x] T059 [US3] Handle incoming note DELETE events to remove remote notes in js/main.js
+- [x] T060 [US3] Add connection status indicator to UI in index.html (Connected/Disconnected badge)
+- [x] T061 [US3] Update connection status based on Supabase config check in js/main.js
+- [x] T062 [US3] Implement localStorage fallback when Supabase unavailable in js/main.js
+- [x] T063 [US3] Add optimistic UI updates (update local immediately, sync async) in js/main.js
+- [x] T064 [US3] Implement isRemoteUpdate flag to prevent echo in real-time handlers
 
-**Checkpoint**: All user stories should now be independently functional. Run quickstart.md Scenarios 1-15.
+**Checkpoint**: All user stories now complete with Supabase backend. Run quickstart.md Scenarios 1-15.
+
+**Implementation Status (2026-06-19)**: Phase 5 COMPLETED
+- ✅ Supabase schema deployed (sessions, strokes, sticky_notes + RLS)
+- ✅ Frontend integration complete (config.js, supabase-client.js)
+- ✅ Real-time subscriptions working (PostgreSQL CDC)
+- ✅ localStorage fallback implemented
+- ✅ Connection status indicator added
+- ✅ Local testing completed
 
 ---
 
@@ -199,13 +209,14 @@ whiteboard/
 
 - **User Story 1 (P1)**: Can start after Foundational (Phase 2) - No dependencies on other stories
 - **User Story 2 (P2)**: Can start after Foundational (Phase 2) - Shares undo.js with US1 but independently testable
-- **User Story 3 (P3)**: Can start after Foundational (Phase 2) - Adds networking layer to US1/US2 features
+- **User Story 3 (P3)**: Can start after Foundational (Phase 2) - Adds Supabase persistence layer to US1/US2 features
 
 ### Within Each User Story
 
 - **US1**: Stroke module → Canvas module → Drawing handlers → Persistence → Undo → Selection/Delete → UI polish
 - **US2**: StickyNote module → Note creation → Text editing → Dragging → Persistence → Delete → Undo integration
-- **US3**: Backend (can parallel) → Frontend WebSocket client → Event emission → Event handling → Reconnection
+- **US3**: ~~Backend (can parallel) → Frontend WebSocket client → Event emission → Event handling → Reconnection~~ 
+  - **Updated (2026-06-19)**: Supabase schema → config.js → supabase-client.js → Real-time subscriptions → Fallback logic
 
 ### Parallel Opportunities
 
@@ -213,8 +224,8 @@ whiteboard/
 - **Foundational phase**: T006, T007 (storage.js, undo.js) can run in parallel
 - **User Story 1**: T009, T010 (strokes.js, canvas.js) can run in parallel
 - **User Story 2**: T026 (stickyNotes.js) independent, can start immediately after T008
-- **User Story 3 Backend**: T040, T041, T042 (setup files) can run in parallel
-- **User Story 3 Frontend**: T050 (collaboration.js) can start while backend tasks are in progress
+- **User Story 3 Supabase Setup**: T040-T045 (schema, docs, config files) can run in parallel
+- **User Story 3 Frontend**: T046-T047 (config.js, supabase-client.js) can run in parallel
 - **Polish phase**: T065, T066, T067, T068, T070, T071 can all run in parallel
 
 ---
@@ -285,16 +296,18 @@ With multiple developers:
 
 ## Task Count Summary
 
-| Phase | Tasks | Parallelizable | Story |
-|-------|-------|----------------|-------|
-| Setup | 5 | 3 (T003-T005) | - |
-| Foundational | 3 | 2 (T006-T007) | - |
-| US1 (Drawing) | 17 | 2 (T009-T010) | P1 |
-| US2 (Sticky Notes) | 14 | 1 (T026) | P2 |
-| US3 (Collaboration) | 25 | 4 (T040-T042, T050) | P3 |
-| Polish | 10 | 7 (T065-T068, T070-T071) | - |
-| **Total** | **74** | **19** | **3 stories** |
+| Phase | Tasks | Parallelizable | Story | Status |
+|-------|-------|----------------|-------|--------|
+| Setup | 5 | 3 (T003-T005) | - | ✅ Complete |
+| Foundational | 3 | 2 (T006-T007) | - | ✅ Complete |
+| US1 (Drawing) | 17 | 2 (T009-T010) | P1 | ✅ Complete |
+| US2 (Sticky Notes) | 14 | 1 (T026) | P2 | 🚧 Partial (T026 done) |
+| US3 (Supabase) | 25 | 8 (T040-T047) | P3 | ✅ Complete |
+| Polish | 10 | 7 (T065-T068, T070-T071) | - | ⏸️ Not started |
+| **Total** | **74** | **23** | **3 stories** | |
 
-**MVP (US1 only)**: 25 tasks (T001-T025)
-**MVP + Notes (US1+US2)**: 39 tasks (T001-T039)
+**MVP (US1 only)**: 25 tasks (T001-T025) ✅ **COMPLETE**
+**MVP + Notes (US1+US2)**: 39 tasks (T001-T039) 🚧 **IN PROGRESS**
 **Full Feature (All)**: 74 tasks (T001-T074)
+
+**Note (2026-06-19)**: Phase 5 (US3) completed with Supabase backend integration, replacing original WebSocket approach

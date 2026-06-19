@@ -16,12 +16,18 @@ Build a collaborative whiteboard web application using vanilla HTML5, CSS3, and 
 
 **Primary Dependencies**: Minimal external libraries approach
 - Frontend: No framework (vanilla JS), no build tools
-- Real-time: NEEDS CLARIFICATION - WebSocket library choice (native WebSocket API vs socket.io for reliability)
-- Backend: NEEDS CLARIFICATION - Server technology for WebSocket support (Node.js with ws/socket.io, Python with websockets, or other)
+- Real-time: **Supabase Client Library** (v2.x) for PostgreSQL real-time subscriptions
+- Backend: **Supabase** managed platform (PostgreSQL + real-time + RLS)
+
+**Architecture Decision (Updated 2026-06-19)**: Supabase Backend
+- **Rationale**: Eliminates need for custom WebSocket server, provides managed PostgreSQL with built-in real-time
+- **Trade-off**: External service dependency vs self-hosted flexibility
+- **Benefits**: Zero backend code, automatic persistence, RLS security, real-time via CDC
 
 **Storage**: 
-- Client-side: Browser localStorage (5-10MB quota) for per-device persistence
-- Server-side: NEEDS CLARIFICATION - Session storage mechanism (in-memory for MVP vs Redis/database for production)
+- Primary: **Supabase PostgreSQL** (sessions, strokes, sticky_notes tables with RLS policies)
+- Client-side: Browser localStorage as fallback when Supabase unavailable
+- Session management: Supabase sessions table (no in-memory state needed)
 
 **Testing**: NEEDS CLARIFICATION - Testing strategy for vanilla JS (Jest with jsdom, Vitest, or manual browser testing only)
 
@@ -85,13 +91,13 @@ Build a collaborative whiteboard web application using vanilla HTML5, CSS3, and 
 - ✅ **PASS**: Acceptance scenarios use GIVEN/WHEN/THEN format
 - ✅ **PASS**: Scope clearly bounded (no shapes, templates, images in v1)
 
-### Pre-Research Gate Status: **PASS WITH ACTIONS**
+### Pre-Research Gate Status: **PASS WITH ACTIONS** (Resolved 2026-06-19)
 
-Must resolve in Phase 0 research:
-1. WebSocket library selection (native vs socket.io)
-2. Backend server technology choice
-3. Testing strategy for vanilla JS
-4. Session storage mechanism (in-memory vs persistent)
+~~Must resolve in Phase 0 research:~~
+1. ~~WebSocket library selection (native vs socket.io)~~ → **RESOLVED: Supabase real-time subscriptions**
+2. ~~Backend server technology choice~~ → **RESOLVED: Supabase managed platform**
+3. Testing strategy for vanilla JS → **RESOLVED: Manual browser testing (quickstart.md)**
+4. ~~Session storage mechanism (in-memory vs persistent)~~ → **RESOLVED: Supabase PostgreSQL**
 
 ### Post-Design Re-Check: **PASS**
 
@@ -147,28 +153,31 @@ specs/[###-feature]/
 
 ```text
 whiteboard/
-├── index.html           # Single-page application entry point
+├── index.html            # Single-page application entry point
 ├── css/
-│   ├── variables.css    # CSS custom properties (design tokens)
-│   ├── layout.css       # Canvas, toolbar, responsive layout
-│   └── components.css   # Sticky notes, buttons, modal styles
+│   ├── variables.css     # CSS custom properties (design tokens)
+│   ├── layout.css        # Canvas, toolbar, responsive layout
+│   └── components.css    # Sticky notes, buttons, modal styles
 ├── js/
-│   ├── main.js          # Application initialization and event coordination
-│   ├── canvas.js        # Canvas rendering and drawing logic
-│   ├── strokes.js       # Stroke data model and management
-│   ├── stickyNotes.js   # Sticky note data model and DOM manipulation
-│   ├── storage.js       # localStorage persistence layer
-│   ├── undo.js          # Undo/redo stack management
-│   └── collaboration.js # WebSocket client (P3 - deferred)
-├── server/              # Collaboration backend (P3 - deferred)
-│   ├── index.js         # WebSocket server entry point
-│   ├── session.js       # Whiteboard session management
-│   └── package.json     # Backend dependencies
-└── tests/               # Testing infrastructure (to be defined)
-    ├── canvas.test.js   # Canvas drawing tests
-    ├── strokes.test.js  # Stroke data tests
-    └── storage.test.js  # localStorage tests
+│   ├── main.js           # Application initialization and event coordination
+│   ├── canvas.js         # Canvas rendering and drawing logic
+│   ├── strokes.js        # Stroke data model and management
+│   ├── stickyNotes.js    # Sticky note data model and DOM manipulation
+│   ├── storage.js        # localStorage fallback persistence layer
+│   ├── undo.js           # Undo/redo stack management
+│   ├── config.js         # Supabase configuration (URL, anon key)
+│   └── supabase-client.js # Supabase API wrapper and real-time subscriptions
+├── supabase-schema.sql   # Database schema (sessions, strokes, sticky_notes tables + RLS)
+├── .env.example          # Environment variable template
+├── SUPABASE_SETUP.md     # Supabase integration guide
+└── README.md             # Project documentation
 ```
+
+**Architecture Change (2026-06-19)**: 
+- **Removed**: `server/` directory (no custom backend needed)
+- **Removed**: `collaboration.js` (replaced by supabase-client.js)
+- **Added**: `config.js`, `supabase-client.js`, `supabase-schema.sql`
+- **Modified**: `storage.js` now serves as fallback only
 
 **Structure Decision**: Single-page application (Option 1 adapted)
 
@@ -182,7 +191,7 @@ whiteboard/
 **Delivery phases**:
 1. **P1 (Drawing)**: index.html + css/ + js/{main, canvas, strokes, storage, undo}.js
 2. **P2 (Sticky Notes)**: Add js/stickyNotes.js, update components.css
-3. **P3 (Collaboration)**: Add server/ + js/collaboration.js
+3. **P3 (Collaboration)**: ~~Add server/ + js/collaboration.js~~ → Add js/{config, supabase-client}.js + supabase-schema.sql + Supabase setup
 
 ## Complexity Tracking
 
