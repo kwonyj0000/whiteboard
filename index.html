@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Collaborative Whiteboard</title>
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/components.css">
+    <!-- Supabase Client Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <div id="app">
+        <!-- Toolbar -->
+        <div id="toolbar">
+            <div class="tool-group">
+                <h1>Whiteboard</h1>
+            </div>
+
+            <div class="tool-group">
+                <!-- Brush sizes (T011) -->
+                <button id="brush-thin" class="btn btn-tool" data-size="thin" title="Thin brush">
+                    <span class="brush-preview thin"></span>
+                </button>
+                <button id="brush-medium" class="btn btn-tool active" data-size="medium" title="Medium brush">
+                    <span class="brush-preview medium"></span>
+                </button>
+                <button id="brush-thick" class="btn btn-tool" data-size="thick" title="Thick brush">
+                    <span class="brush-preview thick"></span>
+                </button>
+            </div>
+
+            <div class="tool-group">
+                <!-- Undo/Redo (T018, T020) -->
+                <button id="undo-btn" class="btn btn-action" disabled title="Undo (Ctrl+Z)">
+                    ↶ Undo
+                </button>
+                <button id="redo-btn" class="btn btn-action" disabled title="Redo (Ctrl+Y)">
+                    ↷ Redo
+                </button>
+            </div>
+
+            <div class="tool-group">
+                <!-- Delete button (T022) -->
+                <button id="delete-btn" class="btn btn-action" disabled title="Delete selected (Delete key)">
+                    🗑 Delete
+                </button>
+            </div>
+
+            <div class="tool-group">
+                <!-- Add Note button (T027 - P2) -->
+                <button id="add-note-btn" class="btn btn-primary" title="Add sticky note">
+                    📝 Add Note
+                </button>
+            </div>
+
+            <div class="tool-group">
+                <!-- Clear All (T023) -->
+                <button id="clear-all-btn" class="btn btn-danger" title="Clear all content">
+                    Clear All
+                </button>
+            </div>
+
+            <div class="tool-group status">
+                <!-- Connection status (T061 - P3) -->
+                <span id="connection-status" class="status-badge" style="display: none;">
+                    <span class="status-dot"></span>
+                    <span class="status-text">Disconnected</span>
+                </span>
+            </div>
+        </div>
+
+        <!-- Canvas container -->
+        <div id="canvas-container">
+            <canvas id="whiteboard-canvas"></canvas>
+            <!-- Sticky notes will be rendered here as DOM elements -->
+            <div id="notes-container"></div>
+        </div>
+
+        <!-- Clear All confirmation modal (T023) -->
+        <div id="clear-modal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <h2>Clear All Content?</h2>
+                <p>This will permanently delete all strokes and sticky notes. This action cannot be undone.</p>
+                <div class="modal-actions">
+                    <button id="clear-cancel-btn" class="btn btn-secondary">Cancel</button>
+                    <button id="clear-confirm-btn" class="btn btn-danger">Clear All</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript modules -->
+    <script type="module" src="js/config.js"></script>
+    <script type="module" src="js/supabase-client.js"></script>
+    <script type="module" src="js/storage.js"></script>
+    <script type="module" src="js/undo.js"></script>
+    <script type="module" src="js/strokes.js"></script>
+    <script type="module" src="js/canvas.js"></script>
+    <script type="module" src="js/stickyNotes.js"></script>
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>

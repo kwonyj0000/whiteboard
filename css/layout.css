@@ -1,0 +1,154 @@
+/* Layout & Structure */
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: var(--font-family);
+    font-size: var(--font-size-base);
+    color: var(--color-text);
+    overflow: hidden;
+    background: var(--color-bg-main);
+}
+
+#app {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100vw;
+}
+
+/* Toolbar */
+#toolbar {
+    display: flex;
+    align-items: center;
+    gap: var(--space-lg);
+    height: var(--toolbar-height);
+    padding: 0 var(--space-lg);
+    background: var(--color-bg-toolbar);
+    border-bottom: 1px solid var(--color-border);
+    z-index: var(--z-toolbar);
+    flex-shrink: 0;
+}
+
+#toolbar h1 {
+    font-size: var(--font-size-xl);
+    font-weight: 600;
+    color: var(--color-text);
+    margin: 0;
+}
+
+.tool-group {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.tool-group.status {
+    margin-left: auto;
+}
+
+/* Canvas Container */
+#canvas-container {
+    position: relative;
+    flex: 1;
+    overflow: hidden;
+    background: var(--color-bg-canvas);
+}
+
+#whiteboard-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    cursor: crosshair;
+    z-index: var(--z-canvas);
+    /* T025: Prevent touch scroll conflicts */
+    touch-action: none;
+}
+
+#notes-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: var(--z-notes);
+}
+
+/* Sticky Notes Container */
+.sticky-note {
+    position: absolute;
+    width: var(--note-width);
+    height: var(--note-height);
+    background: var(--color-bg-note);
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-md);
+    pointer-events: auto;
+    cursor: move;
+    display: flex;
+    flex-direction: column;
+    transition: transform var(--transition-fast);
+}
+
+.sticky-note:hover {
+    box-shadow: var(--shadow-lg);
+}
+
+.sticky-note.selected {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+}
+
+.sticky-note-header {
+    padding: var(--space-sm) var(--space-md);
+    background: rgba(0, 0, 0, 0.05);
+    border-bottom: 1px solid var(--color-border);
+    cursor: move;
+    border-radius: var(--border-radius) var(--border-radius) 0 0;
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+}
+
+.sticky-note-content {
+    flex: 1;
+    padding: var(--space-md);
+    overflow: auto;
+}
+
+.sticky-note-textarea {
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: transparent;
+    resize: none;
+    font-family: var(--font-family);
+    font-size: var(--font-size-base);
+    color: var(--color-text);
+    outline: none;
+}
+
+/* Responsive Design (T065) */
+@media (max-width: 768px) {
+    #toolbar {
+        flex-wrap: wrap;
+        height: auto;
+        min-height: var(--toolbar-height);
+        padding: var(--space-sm);
+        gap: var(--space-sm);
+    }
+
+    #toolbar h1 {
+        font-size: var(--font-size-lg);
+    }
+
+    .tool-group {
+        gap: var(--space-xs);
+    }
+}
